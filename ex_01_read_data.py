@@ -17,7 +17,11 @@ def load_data(data_path: Path) -> pd.DataFrame:
     Raises:
         FileNotFoundError: If the specified data file does not exist.
     """
-    raise NotImplementedError("Implement Exercise 1.1")
+    data = pd.read_csv(data_path)
+    data = remove_unlabeled_data(data).dropna().reset_index(drop=True)
+    if data.empty:
+        raise ValueError("No labeled rows with complete data remain.")
+    return data
 
 def remove_unlabeled_data(data: pd.DataFrame) -> pd.DataFrame:
     """
@@ -29,7 +33,7 @@ def remove_unlabeled_data(data: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with unlabeled data removed.
     """
-    raise NotImplementedError("Implement Exercise 1.2")
+    return data.loc[data["labels"] != -1].copy()
 
 
 def convert_to_np(data: pd.DataFrame) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -45,7 +49,18 @@ def convert_to_np(data: pd.DataFrame) -> tuple[np.ndarray, np.ndarray, np.ndarra
             - exp_ids (np.ndarray): Array of experiment IDs
             - data (np.ndarray): Combined array of current and voltage features
     """
-    raise NotImplementedError("Implement Exercise 1.3")
+    labels = data["labels"].to_numpy()
+    exp_ids = data["exp_ids"].to_numpy()
+    current_columns = [col for col in data.columns if col.startswith("I")]
+    voltage_columns = [col for col in data.columns if col.startswith("V")]
+
+    if not current_columns or len(current_columns) != len(voltage_columns):
+        raise ValueError("Expected equal numbers of current and voltage columns.")
+
+    current = data[current_columns].to_numpy(dtype=float)
+    voltage = data[voltage_columns].to_numpy(dtype=float)
+    features = np.stack((current, voltage), axis=-1)
+    return labels, exp_ids, features
 
 
 def create_sliding_windows_first_dim(data: np.ndarray, sequence_length: int) -> np.ndarray:
@@ -59,7 +74,13 @@ def create_sliding_windows_first_dim(data: np.ndarray, sequence_length: int) -> 
     Returns:
         np.ndarray: Windowed data of shape (n_windows, sequence_length, timesteps, features)
     """
-    raise NotImplementedError("Implement Exercise 1.4")
+    if data.ndim != 3:
+        raise ValueError("Expected data with shape (samples, timesteps, features).")
+    if not 1 <= sequence_length <= len(data):
+        raise ValueError("Sequence length must be between 1 and the number of samples.")
+
+    windows = np.lib.stride_tricks.sliding_window_view(data, sequence_length, axis=0)
+    return windows.transpose(0, 3, 1, 2)
 
 def get_welding_data(path: Path, n_samples: int | None = None, return_sequences: bool = False, sequence_length: int = 100) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """

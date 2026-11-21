@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+.pytest_cache/
 
 # Distribution / packaging
 dist/
@@ -13,6 +15,8 @@ venv/
 env/
 .env/
 .venv/
+.venv/
+.venv312/
 
 # IDE specific files
 .idea/
@@ -51,7 +55,12 @@ coverage.xml
 ehthumbs.db
 Thumbs.db
 
-data/
+# Jupyter
+.ipynb_checkpoints/
+
+# Dataset and generated files
+data.csv
+*.npy
 
 # Windows Zone.Identifier files
 *:Zone.Identifier
